@@ -30,7 +30,7 @@ class _GalleryPageState extends State<GalleryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Галерея')),
-      body: const Center(child: Text('Тут будут ваши работы :)')),
+      body: const Center(child: Text('Галерея')),
     );
   }
 }
