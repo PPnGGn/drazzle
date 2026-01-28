@@ -7,9 +7,13 @@ import 'package:draw_hub/features/gallery/ui/pages/gallery_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:typed_data';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:draw_hub/core/di/talker_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final talker = ref.watch(talkerProvider);
   final router = GoRouter(
+    observers: [TalkerRouteObserver(talker)],
     initialLocation: '/login',
     redirect: (context, state) {
       final authAsync = ref.watch(authUserProvider);

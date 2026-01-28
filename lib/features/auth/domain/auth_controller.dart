@@ -1,14 +1,16 @@
 import 'package:draw_hub/core/errors/auth_exception.dart';
+import 'package:draw_hub/core/di/talker_provider.dart';
 import 'package:draw_hub/features/auth/ui/providers/auth_providers.dart';
 import 'package:draw_hub/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 sealed class AuthOperationState {
   const AuthOperationState();
 }
 
-class AuthOperationIdle extends AuthOperationState {
-  const AuthOperationIdle();
+class AuthOperationInitial extends AuthOperationState {
+  const AuthOperationInitial();
 }
 
 class AuthOperationLoading extends AuthOperationState {
@@ -26,20 +28,27 @@ class AuthOperationError extends AuthOperationState {
 
 class AuthController extends Notifier<AuthOperationState> {
   late final AuthUseCase _authUseCase = ref.read(authUseCaseProvider);
+  late final Talker _talker;
 
   @override
   AuthOperationState build() {
-    return const AuthOperationIdle();
+    _talker = ref.read(talkerProvider);
+    _talker.info('AuthController инициализирован');
+    return const AuthOperationInitial();
   }
 
   Future<void> login({required String email, required String password}) async {
+    _talker.info('Начало входа в приложении');
     state = const AuthOperationLoading();
     try {
       await _authUseCase.loginUseCase(email: email, password: password);
+      _talker.info('Вход выполнен успешно');
       state = const AuthOperationSuccess();
     } on AuthException catch (e) {
+      _talker.warning('Ошибка входа: ${e.userMessage}');
       state = AuthOperationError(e.userMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _talker.handle(e, stackTrace, 'Неизвестная ошибка при входе');
       state = const AuthOperationError('Неизвестная ошибка при входе');
     }
   }
@@ -49,6 +58,7 @@ class AuthController extends Notifier<AuthOperationState> {
     required String password,
     String? displayName,
   }) async {
+    _talker.info('Начало регистрации в приложении');
     state = const AuthOperationLoading();
     try {
       await _authUseCase.registrationUseCase(
@@ -56,22 +66,29 @@ class AuthController extends Notifier<AuthOperationState> {
         password: password,
         displayName: displayName,
       );
+      _talker.info('Регистрация выполнена успешно');
       state = const AuthOperationSuccess();
     } on AuthException catch (e) {
+      _talker.warning('Ошибка регистрации: ${e.userMessage}');
       state = AuthOperationError(e.userMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _talker.handle(e, stackTrace, 'Неизвестная ошибка при регистрации');
       state = const AuthOperationError('Неизвестная ошибка при регистрации');
     }
   }
 
   Future<void> logout() async {
+    _talker.info('Начало выхода из приложения');
     state = const AuthOperationLoading();
     try {
       await _authUseCase.logoutUseCase();
+      _talker.info('Выход выполнен успешно');
       state = const AuthOperationSuccess();
     } on AuthException catch (e) {
+      _talker.warning('Ошибка выхода: ${e.userMessage}');
       state = AuthOperationError(e.userMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _talker.handle(e, stackTrace, 'Неизвестная ошибка при выходе');
       state = const AuthOperationError('Не удалось выйти из аккаунта');
     }
   }

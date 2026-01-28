@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:draw_hub/core/services/firebase_auth_service.dart';
 import 'package:draw_hub/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:draw_hub/features/auth/models/auth_user.dart';
 import 'package:draw_hub/core/services/auth_service.dart';
+import 'package:draw_hub/core/di/talker_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,9 +12,15 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
 
-// Провайдер для AuthService
+// Провайдер для AuthService (возвращает реализацию Firebase)
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+  final talker = ref.watch(talkerProvider);
+
+  return FirebaseAuthService(
+    auth: FirebaseAuth.instance,
+    firestore: FirebaseFirestore.instance,
+    talker: talker,
+  );
 });
 
 // Провайдер для AuthUseCase
