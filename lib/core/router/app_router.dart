@@ -1,0 +1,64 @@
+import 'package:drazzle/features/auth/ui/pages/login_page.dart';
+import 'package:drazzle/features/auth/ui/pages/registration_page.dart';
+import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
+import 'package:drazzle/core/di/talker_provider.dart';
+import 'package:drazzle/features/gallery/gallery_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final talker = ref.watch(talkerProvider);
+  final router = GoRouter(
+    observers: [TalkerRouteObserver(talker)],
+    initialLocation: '/login',
+    redirect: (context, state) {
+      final authAsync = ref.watch(authUserProvider);
+
+      // Обрабатываем все состояния AsyncValue
+      return authAsync.when(
+        data: (user) {
+          final isLoggedIn = user != null;
+          final isOnAuthPage =
+              state.matchedLocation == '/login' ||
+              state.matchedLocation == '/registration';
+
+          if (isLoggedIn && isOnAuthPage) {
+            return '/gallery';
+          }
+          if (!isLoggedIn && !isOnAuthPage) {
+            return '/login';
+          }
+          return null;
+        },
+        loading: () {
+          // Во время загрузки показываем текущую страницу
+          // или можно показать splash screen
+          return null;
+        },
+        error: (error, stack) {
+          return '/login';
+        },
+      );
+    },
+    routes: <RouteBase>[
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/registration',
+        name: 'registration',
+        builder: (context, state) => const RegistrationPage(),
+      ),
+      GoRoute(
+        path: '/gallery',
+        name: 'gallery',
+        builder: (context, state) => const GalleryPage(),
+      ),
+    ],
+  );
+
+  return router;
+});
