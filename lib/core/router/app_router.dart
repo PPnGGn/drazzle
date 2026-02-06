@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:drazzle/features/auth/ui/pages/login_page.dart';
 import 'package:drazzle/features/auth/ui/pages/registration_page.dart';
 import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
 import 'package:drazzle/core/di/talker_provider.dart';
-import 'package:drazzle/features/gallery/gallery_page.dart';
+import 'package:drazzle/features/drawing/ui/pages/drawing_page.dart';
+import 'package:drazzle/features/gallery/ui/pages/fullscreen_image_page.dart';
+import 'package:drazzle/features/gallery/ui/pages/gallery_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -14,8 +18,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/login',
     redirect: (context, state) {
       final authAsync = ref.watch(authUserProvider);
-
-      // Обрабатываем все состояния AsyncValue
       return authAsync.when(
         data: (user) {
           final isLoggedIn = user != null;
@@ -32,8 +34,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         },
         loading: () {
-          // Во время загрузки показываем текущую страницу
-          // или можно показать splash screen
           return null;
         },
         error: (error, stack) {
@@ -56,6 +56,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/gallery',
         name: 'gallery',
         builder: (context, state) => const GalleryPage(),
+      ),
+      GoRoute(
+        path: '/drawing',
+        name: 'drawing',
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            final backgroundImage = extra['backgroundImage'];
+            final closeOnSave = extra['closeOnSave'];
+            return DrawningPage(
+              backgroundImage: backgroundImage is Uint8List
+                  ? backgroundImage
+                  : null,
+              closeOnSave: closeOnSave is bool ? closeOnSave : false,
+            );
+          }
+
+          return const DrawningPage();
+        },
+      ),
+      GoRoute(
+        path: '/image-viewer',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, String>;
+          return FullscreenImagePage(
+            imageUrl: extra['imageUrl']!,
+            heroTag: extra['heroTag']!,
+          );
+        },
       ),
     ],
   );

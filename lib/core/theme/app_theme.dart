@@ -9,7 +9,7 @@ final ThemeData appTheme = ThemeData(
     scrolledUnderElevation: 0,
     centerTitle: true,
     backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
+    surfaceTintColor: Colors.black,
     titleTextStyle: TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.bold,
