@@ -1,3 +1,4 @@
+import 'package:drazzle/core/theme/app_colors.dart';
 import 'package:drazzle/features/auth/domain/auth_controller.dart';
 import 'package:drazzle/features/auth/ui/widgets/custom_text_field.dart';
 import 'package:drazzle/features/auth/ui/widgets/error_snack_bar.dart';
@@ -85,9 +86,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const Spacer(),
                 GradientButton(
-                  onPressed: isLoading ? () {} : () => _handleLogin(),
-
-                  text: isLoading ? 'Загрузка...' : 'Войти',
+                  onPressed: isLoading ? null : () => _handleLogin(),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
+                          ),
+                        )
+                      : const Text('Войти'),
                 ),
                 const SizedBox(height: 20),
                 FilledButton(

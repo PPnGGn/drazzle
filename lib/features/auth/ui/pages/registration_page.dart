@@ -25,6 +25,11 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   final FocusNode _passwordConfirmFocusNode = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -43,6 +48,15 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState is AuthOperationLoading;
+
+
+    ref.listen<AuthOperationState>(authControllerProvider, (previous, next) {
+      if (next is AuthOperationError) {
+        showErrorSnackBar(context, next.message);
+      } else if (next is AuthOperationSuccess) {
+        showSuccessSnackBar(context, 'Регистрация прошла успешно!');
+      }
+    });
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -107,7 +121,14 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                 FilledButton(
                   onPressed: isLoading ? null : _handleRegistration,
                   child: isLoading
-                      ? const Text('Загрузка...')
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
                       : const Text('Регистрация'),
                 ),
                 const SizedBox(height: 40),
@@ -155,13 +176,5 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
       password: password,
       displayName: name,
     );
-
-    if (!mounted) return;
-
-    final newState = ref.read(authControllerProvider);
-    if (newState is AuthOperationSuccess) {
-    } else if (newState is AuthOperationError) {
-      showErrorSnackBar(context, newState.message);
-    }
   }
 }

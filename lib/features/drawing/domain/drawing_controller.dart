@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drazzle/core/services/firebase_storage_service.dart';
+import 'package:drazzle/core/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -70,6 +71,7 @@ class DrawingController extends Notifier<DrawingState> {
   final ImagePicker _imagePicker = ImagePicker();
   final FirebaseStorageService _firebaseStorageService =
       FirebaseStorageService();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   DrawingState build() {
@@ -249,10 +251,16 @@ class DrawingController extends Notifier<DrawingState> {
       state = state.copyWith(
         operationState: const DrawingOperationSuccess(operation: 'save'),
       );
+      
+      // Показываем уведомление об успешном сохранении
+      await _notificationService.showSuccessNotification();
     } catch (e) {
       state = state.copyWith(
         operationState: DrawingOperationError('Ошибка сохранения: $e'),
       );
+      
+      // Показываем уведомление об ошибке
+      await _notificationService.showErrorNotification('Ошибка сохранения: $e');
     }
   }
 
