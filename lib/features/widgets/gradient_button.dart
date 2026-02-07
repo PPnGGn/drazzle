@@ -7,7 +7,10 @@ class GradientButton extends StatelessWidget {
     required this.onPressed,
     this.text,
     this.child,
-  }) : assert(text != null || child != null, 'Either text or child must be provided');
+  }) : assert(
+         text != null || child != null,
+         'Either text or child must be provided',
+       );
 
   final VoidCallback? onPressed;
   final String? text;
@@ -29,6 +32,7 @@ class GradientButton extends StatelessWidget {
         onPressed: onPressed,
         style: Theme.of(context).filledButtonTheme.style?.copyWith(
           backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+          foregroundColor: WidgetStatePropertyAll(AppColors.white),
         ),
         child: child ?? Text(text!, style: Theme.of(context).textTheme.bodyMedium),
       ),
