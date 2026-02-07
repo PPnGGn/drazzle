@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drazzle/features/drawing/models/drawing_model.dart';
-import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
+import 'package:talker_flutter/talker_flutter.dart';
 
 class FirebaseStorageService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -14,6 +14,7 @@ class FirebaseStorageService {
     required String authorId,
     required String title,
     required String authorName,
+    required Talker talker,
   }) async {
     try {
       //  Читаем файл
@@ -54,10 +55,8 @@ class FirebaseStorageService {
       final thumbnailSize = thumbnailBase64.length;
       final imageSize = imageBase64.length;
 
-      debugPrint(
-        'Thumbnail size: ${(thumbnailSize / 1024).toStringAsFixed(2)} KB',
-      );
-      debugPrint('Image size: ${(imageSize / 1024).toStringAsFixed(2)} KB');
+      talker.info('Размер миниатюры: ${(thumbnailSize / 1024).toStringAsFixed(2)} KB');
+      talker.info('Размер изображения: ${(imageSize / 1024).toStringAsFixed(2)} KB');
 
       if (imageSize > 900000) {
         // ~900 KB (оставляем запас)

@@ -17,10 +17,10 @@ class FirebaseAuthService implements AuthService {
     required FirebaseFirestore firestore,
     required Talker talker,
     required NetworkService networkService,
-  }) : _auth = auth,
-       _firestore = firestore,
-       _talker = talker,
-       _networkService = networkService;
+  })  : _auth = auth,
+        _firestore = firestore,
+        _talker = talker,
+        _networkService = networkService;
 
   @override
   Future<User> registerViaEmailPassword({
@@ -40,7 +40,7 @@ class FirebaseAuthService implements AuthService {
         );
       }
 
-      _talker.info('Попытка регистрации для $email');
+      _talker.info('Попытка регистрации пользователя: $email');
 
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -117,7 +117,7 @@ class FirebaseAuthService implements AuthService {
         );
       }
 
-      _talker.info('Попытка входа для $email');
+      _talker.info('Попытка входа пользователя: $email');
 
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -149,11 +149,11 @@ class FirebaseAuthService implements AuthService {
   @override
   Future<void> logout() async {
     try {
-      _talker.info('Attempting logout');
+      _talker.info('Попытка выхода из системы');
       await _auth.signOut();
-      _talker.info('Logout successful');
+      _talker.info('Выход выполнен успешно');
     } on FirebaseAuthException catch (e) {
-      _talker.error('Logout failed: ${e.code}');
+      _talker.error('Ошибка выхода: ${e.code}');
       throw AuthException(e.code, e.message ?? 'Не удалось выйти');
     }
   }

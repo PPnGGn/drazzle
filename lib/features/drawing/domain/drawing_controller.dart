@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drazzle/core/services/firebase_storage_service.dart';
 import 'package:drazzle/core/services/notification_service.dart';
+import 'package:drazzle/core/di/talker_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 // Состояние рисовалка
 sealed class DrawingOperationState {
@@ -72,9 +74,12 @@ class DrawingController extends Notifier<DrawingState> {
   final FirebaseStorageService _firebaseStorageService =
       FirebaseStorageService();
   final NotificationService _notificationService = NotificationService();
+  late final Talker _talker;
 
   @override
   DrawingState build() {
+    _talker = ref.read(talkerProvider);
+    _talker.info('Инициализация DrawingController');
     return DrawingState();
   }
 
@@ -245,6 +250,7 @@ class DrawingController extends Notifier<DrawingState> {
         authorId: user.uid,
         title: title ?? 'Рисунок ${DateTime.now().day}.${DateTime.now().month}',
         authorName: authorName,
+        talker: _talker,
       );
       await tempFile.delete();
 
@@ -253,14 +259,14 @@ class DrawingController extends Notifier<DrawingState> {
       );
       
       // Показываем уведомление об успешном сохранении
-      await _notificationService.showSuccessNotification();
+      await _notificationService.showSuccessNotification(talker: _talker);
     } catch (e) {
       state = state.copyWith(
         operationState: DrawingOperationError('Ошибка сохранения: $e'),
       );
       
       // Показываем уведомление об ошибке
-      await _notificationService.showErrorNotification('Ошибка сохранения: $e');
+      await _notificationService.showErrorNotification('Ошибка сохранения: $e', talker: _talker);
     }
   }
 

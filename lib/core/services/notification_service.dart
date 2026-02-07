@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -11,32 +12,39 @@ class NotificationService {
 
   NotificationService._internal();
 
-  Future<void> initialize() async {
+  Future<void> initialize({required Talker talker}) async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/logo_monochrome');
+
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
           android: initializationSettingsAndroid,
-          iOS: DarwinInitializationSettings(),
+          iOS: initializationSettingsIOS,
         );
 
     await _notifications.initialize(initializationSettings);
 
     // Запрашиваем разрешения через permission_handler
-    await _requestPermissions();
+    await _requestPermissions(talker: talker);
   }
 
-  Future<void> _requestPermissions() async {
+  Future<void> _requestPermissions({required Talker talker}) async {
     if (defaultTargetPlatform == TargetPlatform.android) {
       final status = await Permission.notification.request();
 
       if (status.isGranted) {
-        debugPrint('Разрешение на уведомления получено');
+        talker.info('Разрешение на уведомления получено');
       } else if (status.isDenied) {
-        debugPrint('Разрешение на уведомления отклонено');
+        talker.warning('Разрешение на уведомления отклонено');
       } else if (status.isPermanentlyDenied) {
-        debugPrint('Разрешение на уведомления отклонено навсегда');
+        talker.warning('Разрешение на уведомления отклонено навсегда');
 
         await openAppSettings();
       }
@@ -51,12 +59,16 @@ class NotificationService {
     return true;
   }
 
-  Future<void> showSuccessNotification() async {
+  Future<void> showSuccessNotification({required Talker talker}) async {
+    talker.info('Попытка отправки уведомления об успехе');
+    
     // Проверяем разрешения через permission_handler
     if (!await _checkPermissions()) {
-      debugPrint('Уведомления не разрешены');
+      talker.warning('Уведомления не разрешены');
       return;
     }
+
+    talker.info('Разрешения получены, создаем уведомление');
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -72,23 +84,37 @@ class NotificationService {
 
     const NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        sound: 'default',
+      ),
     );
 
-    await _notifications.show(
-      0,
-      'Рисунок сохранён',
-      'Ваш рисунок успешно сохранён в галерею!',
-      platformDetails,
-      payload: 'drawing_saved',
-    );
+    try {
+      await _notifications.show(
+        0,
+        'Рисунок сохранён',
+        'Ваш рисунок успешно сохранён в галерею!',
+        platformDetails,
+        payload: 'drawing_saved',
+      );
+      talker.info('Уведомление об успехе отправлено');
+    } catch (e) {
+      talker.error('Ошибка отправки уведомления: $e');
+    }
   }
 
-  Future<void> showErrorNotification(String message) async {
+  Future<void> showErrorNotification(String message, {required Talker talker}) async {
+    talker.info('Попытка отправки уведомления об ошибке');
+    
     if (!await _checkPermissions()) {
-      debugPrint('Уведомления не разрешены');
+      talker.warning('Уведомления не разрешены');
       return;
     }
+
+    talker.info('Разрешения получены, создаем уведомление об ошибке');
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -102,15 +128,25 @@ class NotificationService {
 
     const NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        sound: 'default',
+      ),
     );
 
-    await _notifications.show(
-      1,
-      'Ошибка сохранения',
-      message,
-      platformDetails,
-      payload: 'drawing_error',
-    );
+    try {
+      await _notifications.show(
+        1,
+        'Ошибка сохранения',
+        message,
+        platformDetails,
+        payload: 'drawing_error',
+      );
+      talker.info('Уведомление об ошибке отправлено');
+    } catch (e) {
+      talker.error('Ошибка отправки уведомления: $e');
+    }
   }
 }

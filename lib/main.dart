@@ -5,12 +5,17 @@ import 'package:drazzle/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await NotificationService().initialize();
+  
+  // Инициализируем Talker
+  final talker = TalkerFlutter.init();
+  
+  await NotificationService().initialize(talker: talker);
   runApp(ProviderScope(child: const MyApp()));
 }
 

@@ -222,7 +222,7 @@ class GalleryPage extends ConsumerWidget {
           tag: heroTag,
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: _buildImage(drawing), // ✅ Простой метод без навигации
+            child: _buildImage(drawing),
           ),
         ),
       ),
