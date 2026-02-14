@@ -2,56 +2,117 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Drazzle</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>drazzle</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
+    <!-- ============================================ -->
+    <!-- СТАНДАРТНАЯ КОНФИГУРАЦИЯ FLUTTER -->
+    <!-- ============================================ -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Drazzle</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>drazzle</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <false/>
+    
+    <!-- ============================================ -->
+    <!-- РАЗРЕШЕНИЯ, ИСПОЛЬЗУЕМЫЕ ПРИЛОЖЕНИЕМ -->
+    <!-- ============================================ -->
+    
+    <!-- Доступ к фото для сохранения рисунков в галерею -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Приложению нужен доступ к фотографиям, чтобы сохранять ваши рисунки в галерею.</string>
+    
+    <!-- Добавление фото в галерею (iOS 11+, только запись без чтения) -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Приложению нужно разрешение на сохранение рисунков в галерею.</string>
+    
+    <!-- Камера для съемки референсов (через image_picker) -->
+    <key>NSCameraUsageDescription</key>
+    <string>Приложению нужен доступ к камере, чтобы делать фотографии для использования в качестве референсов при рисовании.</string>
+    
+    <!-- Микрофон требуется библиотекой image_picker для записи видео -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Это разрешение требуется подключенной библиотеке выбора изображений. Доступ к микрофону не используется в функциях приложения.</string>
+    
+    <!-- ============================================ -->
+    <!-- ФОНОВЫЙ РЕЖИМ ДЛЯ УВЕДОМЛЕНИЙ -->
+    <!-- processing - обработка локальных уведомлений в фоне -->
+    <!-- remote-notification - получение пуш-уведомлений -->
+    <!-- ============================================ -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>processing</string>
+        <string>remote-notification</string>
+    </array>
+    
+    <!-- ============================================ -->
+    <!-- РАЗРЕШЕНИЯ, ТРЕБУЕМЫЕ ПОДКЛЮЧЕННЫМИ БИБЛИОТЕКАМИ -->
+    <!-- (Не используются напрямую, но требуются зависимостями) -->
+    <!-- ============================================ -->
+    
+    <!-- Локация требуется модулями Firebase Analytics -->
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Это разрешение требуется подключенной библиотеке Firebase. Данные о местоположении не собираются и не используются приложением.</string>
+    
+    <!-- Bluetooth требуется библиотеке connectivity_plus для проверки сети -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Это разрешение требуется библиотеке мониторинга сети для проверки статуса подключения. Bluetooth не используется в функциях приложения.</string>
+    
+    <!-- Отслеживание пользователя требуется библиотекам Firebase -->
+    <key>NSUserTrackingUsageDescription</key>
+    <string>Это разрешение требуется библиотекам Firebase для аналитики. Отслеживание используется только для улучшения приложения.</string>
+    
+    <!-- ============================================ -->
+    <!-- НАСТРОЙКИ СЕТИ -->
+    <!-- ============================================ -->
+    
+    <!-- Безопасность транспорта приложений -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <!-- Запрещаем произвольные загрузки (только HTTPS) -->
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+        <!-- Разрешаем локальное сетевое взаимодействие -->
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>background-fetch</string>
-		<string>background-processing</string>
-		<string>remote-notification</string>
-	</array>
-	<key>NSUserNotificationUsageDescription</key>
-	<string>Это приложение использует уведомления для информирования о сохранении рисунков</string>
 </dict>
 </plist>
