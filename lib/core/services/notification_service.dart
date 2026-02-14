@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 class NotificationService {
@@ -13,9 +12,6 @@ class NotificationService {
   NotificationService._internal();
 
   Future<void> initialize({required Talker talker}) async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/logo_monochrome');
-
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
           requestAlertPermission: true,
@@ -24,72 +20,41 @@ class NotificationService {
         );
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsIOS,
-        );
+        InitializationSettings(iOS: initializationSettingsIOS);
 
     await _notifications.initialize(initializationSettings);
 
-    // Запрашиваем разрешения через permission_handler
     await _requestPermissions(talker: talker);
   }
 
+  // Запрашиваем разрешения
   Future<void> _requestPermissions({required Talker talker}) async {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final status = await Permission.notification.request();
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final bool? result = await _notifications
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
 
-      if (status.isGranted) {
-        talker.info('Разрешение на уведомления получено');
-      } else if (status.isDenied) {
-        talker.warning('Разрешение на уведомления отклонено');
-      } else if (status.isPermanentlyDenied) {
-        talker.warning('Разрешение на уведомления отклонено навсегда');
-
-        await openAppSettings();
+      if (result == true) {
+        talker.info('Разрешение на уведомления iOS получено');
+      } else {
+        talker.warning('Разрешение на уведомления iOS отклонено');
       }
     }
   }
 
-  Future<bool> _checkPermissions() async {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final status = await Permission.notification.status;
-      return status.isGranted;
-    }
-    return true;
-  }
-
   Future<void> showSuccessNotification({required Talker talker}) async {
     talker.info('Попытка отправки уведомления об успехе');
-    
-    // Проверяем разрешения через permission_handler
-    if (!await _checkPermissions()) {
-      talker.warning('Уведомления не разрешены');
-      return;
-    }
 
-    talker.info('Разрешения получены, создаем уведомление');
-
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          'drawing_channel',
-          'Drawing Notifications',
-          channelDescription: 'Notifications for drazzle',
-          importance: Importance.high,
-          priority: Priority.high,
-          ticker: 'ticker',
-          enableVibration: true,
-          playSound: true,
-        );
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-        sound: 'default',
-      ),
+      iOS: iosDetails,
     );
 
     try {
@@ -106,34 +71,20 @@ class NotificationService {
     }
   }
 
-  Future<void> showErrorNotification(String message, {required Talker talker}) async {
+  Future<void> showErrorNotification(
+    String message, {
+    required Talker talker,
+  }) async {
     talker.info('Попытка отправки уведомления об ошибке');
-    
-    if (!await _checkPermissions()) {
-      talker.warning('Уведомления не разрешены');
-      return;
-    }
 
-    talker.info('Разрешения получены, создаем уведомление об ошибке');
-
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          'drawing_channel',
-          'Drawing Notifications',
-          channelDescription: 'Error notifications for drawing app',
-          importance: Importance.high,
-          priority: Priority.high,
-          ticker: 'ticker',
-        );
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-        sound: 'default',
-      ),
+      iOS: iosDetails,
     );
 
     try {

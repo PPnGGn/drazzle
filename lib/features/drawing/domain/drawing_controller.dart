@@ -257,16 +257,19 @@ class DrawingController extends Notifier<DrawingState> {
       state = state.copyWith(
         operationState: const DrawingOperationSuccess(operation: 'save'),
       );
-      
+
       // Показываем уведомление об успешном сохранении
       await _notificationService.showSuccessNotification(talker: _talker);
     } catch (e) {
       state = state.copyWith(
         operationState: DrawingOperationError('Ошибка сохранения: $e'),
       );
-      
+
       // Показываем уведомление об ошибке
-      await _notificationService.showErrorNotification('Ошибка сохранения: $e', talker: _talker);
+      await _notificationService.showErrorNotification(
+        'Ошибка сохранения: $e',
+        talker: _talker,
+      );
     }
   }
 

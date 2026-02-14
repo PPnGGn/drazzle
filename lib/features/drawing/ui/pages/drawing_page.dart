@@ -1,7 +1,4 @@
 import 'dart:typed_data';
-
-import 'package:drazzle/core/services/notification_service.dart';
-import 'package:drazzle/core/di/talker_provider.dart';
 import 'package:drazzle/features/drawing/domain/drawing_controller.dart';
 import 'package:drazzle/features/drawing/ui/widgets/brush_size_dialog.dart';
 import 'package:drazzle/features/drawing/ui/widgets/color_picker.dart';
@@ -106,13 +103,6 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
   Widget build(BuildContext context) {
     ref.listen(drawingControllerProvider, (previous, next) {
       if (next.operationState is DrawingOperationError) {
-        final errorState = next.operationState as DrawingOperationError;
-
-        NotificationService().showErrorNotification(
-          errorState.message,
-          talker: ref.read(talkerProvider),
-        );
-
         // сбросить состояние ошибки
         Future.microtask(() {
           ref.read(drawingControllerProvider.notifier).resetOperationState();
@@ -122,10 +112,6 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
       if (next.operationState is DrawingOperationSuccess &&
           previous?.operationState is! DrawingOperationSuccess) {
         final successState = next.operationState as DrawingOperationSuccess;
-
-        NotificationService().showSuccessNotification(
-          talker: ref.read(talkerProvider),
-        );
 
         Future.microtask(() {
           ref.read(drawingControllerProvider.notifier).resetOperationState();
