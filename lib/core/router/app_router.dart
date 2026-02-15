@@ -7,6 +7,7 @@ import 'package:drazzle/core/di/talker_provider.dart';
 import 'package:drazzle/features/drawing/ui/pages/drawing_page.dart';
 import 'package:drazzle/features/gallery/ui/pages/fullscreen_image_page.dart';
 import 'package:drazzle/features/gallery/ui/pages/gallery_page.dart';
+import 'package:drazzle/features/splash/splash_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -15,7 +16,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final talker = ref.watch(talkerProvider);
   final router = GoRouter(
     observers: [TalkerRouteObserver(talker)],
-    initialLocation: '/login',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final authAsync = ref.watch(authUserProvider);
       return authAsync.when(
@@ -42,6 +43,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: <RouteBase>[
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashPage(),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
