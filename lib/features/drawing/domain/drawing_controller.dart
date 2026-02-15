@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -183,12 +184,12 @@ class DrawingController extends Notifier<DrawingState> {
 
   Future<void> shareDrawing(String imagePath, BuildContext context) async {
     if (!context.mounted) return;
-    
+
     final box = context.findRenderObject() as RenderBox?;
-    final rect = box != null 
+    final rect = box != null
         ? box.localToGlobal(Offset.zero) & box.size
         : Rect.zero;
-    
+
     final params = ShareParams(
       files: [XFile(imagePath)],
       sharePositionOrigin: rect,
@@ -198,7 +199,10 @@ class DrawingController extends Notifier<DrawingState> {
   }
 
   // Экспорт рисунка через нативный share
-  Future<void> exportDrawing(GlobalKey repaintBoundaryKey, BuildContext context) async {
+  Future<void> exportDrawing(
+    GlobalKey repaintBoundaryKey,
+    BuildContext context,
+  ) async {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
 
@@ -283,6 +287,22 @@ class DrawingController extends Notifier<DrawingState> {
         'Ошибка сохранения: $e',
         talker: _talker,
       );
+    }
+  }
+
+  // Сохранение в галерею устройства
+  Future<void> saveLocalImage(GlobalKey globalKey) async {
+    RenderRepaintBoundary boundary =
+        globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    ui.Image image = await boundary.toImage();
+    ByteData? byteData = await (image.toByteData(
+      format: ui.ImageByteFormat.png,
+    ));
+    if (byteData != null) {
+      final result = await ImageGallerySaverPlus.saveImage(
+        byteData.buffer.asUint8List(),
+      );
+      _talker.info('Изображение сохранено в галерею устройства: $result');
     }
   }
 

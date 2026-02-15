@@ -48,6 +48,9 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
     ref
         .read(drawingControllerProvider.notifier)
         .saveDrawing(_repaintBoundaryKey);
+    ref
+        .read(drawingControllerProvider.notifier)
+        .saveLocalImage(_repaintBoundaryKey);
   }
 
   Future<void> _onBrushPressed() async {
