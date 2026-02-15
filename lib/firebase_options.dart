@@ -60,4 +60,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'drazzle-9f8a5.firebasestorage.app',
     iosBundleId: 'com.example.drazzle',
   );
+
 }
