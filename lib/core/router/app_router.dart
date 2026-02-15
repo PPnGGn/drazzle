@@ -79,11 +79,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (extra is Map<String, dynamic>) {
             final backgroundImage = extra['backgroundImage'];
             final closeOnSave = extra['closeOnSave'];
+            final drawingId = extra['drawingId'];
+            final title = extra['title'];
+            final createdAt = extra['createdAt'];
             return DrawningPage(
               backgroundImage: backgroundImage is Uint8List
                   ? backgroundImage
                   : null,
               closeOnSave: closeOnSave is bool ? closeOnSave : false,
+              drawingId: drawingId is String ? drawingId : null,
+              initialTitle: title is String ? title : null,
+              createdAt: createdAt is DateTime ? createdAt : null,
             );
           }
 
@@ -93,10 +99,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/image-viewer',
         builder: (context, state) {
-          final extra = state.extra as Map<String, String>;
+          final extra = state.extra as Map<String, dynamic>;
           return FullscreenImagePage(
-            imageUrl: extra['imageUrl']!,
-            heroTag: extra['heroTag']!,
+            imageUrl: extra['imageUrl'] as String,
+            heroTag: extra['heroTag'] as String,
+            drawingId: extra['drawingId'] as String?,
+            title: extra['title'] as String?,
+            createdAt: extra['createdAt'] as DateTime?,
           );
         },
       ),

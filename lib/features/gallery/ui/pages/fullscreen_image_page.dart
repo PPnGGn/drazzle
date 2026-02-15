@@ -7,11 +7,17 @@ import 'package:go_router/go_router.dart';
 class FullscreenImagePage extends StatelessWidget {
   final String imageUrl;
   final String heroTag;
+  final String? drawingId;
+  final String? title;
+  final DateTime? createdAt;
 
   const FullscreenImagePage({
     super.key,
     required this.imageUrl,
     required this.heroTag,
+    this.drawingId,
+    this.title,
+    this.createdAt,
   });
 
   @override
@@ -33,11 +39,21 @@ class FullscreenImagePage extends StatelessWidget {
                 return;
               }
 
+              if (drawingId == null || drawingId!.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Не удалось определить, что именно нужно редактировать')),
+                );
+                return;
+              }
+
               context.push(
                 '/drawing',
                 extra: {
                   'backgroundImage': bytes,
                   'closeOnSave': true,
+                  'drawingId': drawingId,
+                  'title': title,
+                  'createdAt': createdAt,
                 },
               );
             },

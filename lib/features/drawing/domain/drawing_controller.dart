@@ -237,6 +237,8 @@ class DrawingController extends Notifier<DrawingState> {
   Future<void> saveDrawing(
     GlobalKey repaintBoundaryKey, {
     String? title,
+    String? drawingId,
+    DateTime? createdAt,
   }) async {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
@@ -262,13 +264,29 @@ class DrawingController extends Notifier<DrawingState> {
 
       // 4. Сохраняем через общий сервис (Firestore: base64 + thumbnail)
       final tempFile = await _createTempFile(imageBytes);
-      await _firebaseStorageService.saveDrawing(
-        imageFile: tempFile,
-        authorId: user.uid,
-        title: title ?? 'Рисунок ${DateTime.now().day}.${DateTime.now().month}',
-        authorName: authorName,
-        talker: _talker,
-      );
+
+      final resolvedTitle =
+          title ?? 'Рисунок ${DateTime.now().day}.${DateTime.now().month}';
+
+      if (drawingId != null && drawingId.trim().isNotEmpty) {
+        await _firebaseStorageService.updateDrawing(
+          drawingId: drawingId,
+          imageFile: tempFile,
+          authorId: user.uid,
+          title: resolvedTitle,
+          authorName: authorName,
+          createdAt: createdAt ?? DateTime.now(),
+          talker: _talker,
+        );
+      } else {
+        await _firebaseStorageService.saveDrawing(
+          imageFile: tempFile,
+          authorId: user.uid,
+          title: resolvedTitle,
+          authorName: authorName,
+          talker: _talker,
+        );
+      }
       await tempFile.delete();
 
       state = state.copyWith(

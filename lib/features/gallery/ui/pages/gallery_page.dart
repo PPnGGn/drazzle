@@ -202,7 +202,13 @@ class GalleryPage extends ConsumerWidget {
 
         context.push(
           '/image-viewer',
-          extra: {'imageUrl': imageUrl, 'heroTag': heroTag},
+          extra: {
+            'imageUrl': imageUrl,
+            'heroTag': heroTag,
+            'drawingId': drawing.id,
+            'title': drawing.title,
+            'createdAt': drawing.createdAt,
+          },
         );
       },
       onLongPress: () =>

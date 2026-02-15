@@ -13,9 +13,15 @@ import 'package:go_router/go_router.dart';
 class DrawningPage extends ConsumerStatefulWidget {
   final Uint8List? backgroundImage;
   final bool closeOnSave;
+  final String? drawingId;
+  final String? initialTitle;
+  final DateTime? createdAt;
   const DrawningPage({
     this.backgroundImage,
     this.closeOnSave = false,
+    this.drawingId,
+    this.initialTitle,
+    this.createdAt,
     super.key,
   });
 
@@ -47,7 +53,12 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
 
     ref
         .read(drawingControllerProvider.notifier)
-        .saveDrawing(_repaintBoundaryKey);
+        .saveDrawing(
+          _repaintBoundaryKey,
+          title: widget.initialTitle,
+          drawingId: widget.drawingId,
+          createdAt: widget.createdAt,
+        );
     ref
         .read(drawingControllerProvider.notifier)
         .saveLocalImage(_repaintBoundaryKey);
@@ -121,11 +132,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
         });
 
         if (successState.operation == 'save') {
-          Future.microtask(() {
-            if (context.mounted) {
-              context.go('/gallery');
-            }
-          });
+          context.go('/gallery');
         }
       }
     });

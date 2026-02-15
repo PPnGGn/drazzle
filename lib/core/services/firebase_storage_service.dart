@@ -95,6 +95,77 @@ class FirebaseStorageService {
     }
   }
 
+  Future<DrawingModel> updateDrawing({
+    required String drawingId,
+    required File imageFile,
+    required String authorId,
+    required String title,
+    required String authorName,
+    required DateTime createdAt,
+    required Talker talker,
+  }) async {
+    try {
+      final bytes = await imageFile.readAsBytes();
+
+      img.Image? image = img.decodeImage(bytes);
+      if (image == null) {
+        throw Exception('Не удалось декодировать изображение');
+      }
+
+      img.Image thumbnail = img.copyResize(
+        image,
+        width: 400,
+        height: (400 * image.height / image.width).round(),
+      );
+
+      img.Image mainImage = image;
+      if (image.width > 1024 || image.height > 1024) {
+        mainImage = img.copyResize(
+          image,
+          width: 1024,
+          height: (1024 * image.height / image.width).round(),
+        );
+      }
+
+      final thumbnailJpg = img.encodeJpg(thumbnail, quality: 80);
+      final mainImageJpg = img.encodeJpg(mainImage, quality: 85);
+
+      final thumbnailBase64 = base64Encode(thumbnailJpg);
+      final imageBase64 = base64Encode(mainImageJpg);
+
+      final thumbnailSize = thumbnailBase64.length;
+      final imageSize = imageBase64.length;
+
+      talker.info('Размер миниатюры: ${(thumbnailSize / 1024).toStringAsFixed(2)} KB');
+      talker.info('Размер изображения: ${(imageSize / 1024).toStringAsFixed(2)} KB');
+
+      if (imageSize > 900000) {
+        throw Exception(
+          'Изображение слишком большое. Попробуйте упростить рисунок.',
+        );
+      }
+
+      final drawing = DrawingModel(
+        id: drawingId,
+        title: title,
+        authorId: authorId,
+        createdAt: createdAt,
+        imageUrl: 'data:image/jpeg;base64,$imageBase64',
+        thumbnailUrl: 'data:image/jpeg;base64,$thumbnailBase64',
+        authorName: authorName,
+      );
+
+      await _firestore
+          .collection('drawings')
+          .doc(drawingId)
+          .set(drawing.toFirestore());
+
+      return drawing;
+    } catch (e) {
+      throw Exception('Ошибка сохранения: $e');
+    }
+  }
+
   // Удаление рисунка
   Future<void> deleteDrawing(String drawingId) async {
     try {
