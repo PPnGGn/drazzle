@@ -1,4 +1,5 @@
 import 'package:drazzle/features/auth/domain/auth_controller.dart';
+import 'package:drazzle/features/auth/domain/auth_operation_state.dart';
 import 'package:drazzle/features/auth/ui/widgets/custom_text_field.dart';
 import 'package:drazzle/features/auth/ui/widgets/error_snack_bar.dart';
 import 'package:drazzle/features/widgets/gradient_button.dart';
@@ -92,7 +93,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text('Войти'),

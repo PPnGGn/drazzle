@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:drazzle/features/auth/ui/pages/login_page.dart';
 import 'package:drazzle/features/auth/ui/pages/registration_page.dart';
-import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
+import 'package:drazzle/core/di/auth_providers.dart';
 import 'package:drazzle/core/di/talker_provider.dart';
 import 'package:drazzle/features/drawing/ui/pages/drawing_page.dart';
 import 'package:drazzle/features/gallery/ui/pages/fullscreen_image_page.dart';

@@ -1,25 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:drazzle/core/services/firebase_storage_service.dart';
-import 'package:drazzle/core/services/image_service.dart';
-import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
+import 'package:drazzle/core/di/firebase_providers.dart';
+import 'package:drazzle/core/di/auth_providers.dart';
 import 'package:drazzle/features/drawing/models/drawing_model.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// Провайдер для Firestore
-final firestoreProvider = Provider<FirebaseFirestore>((ref) {
-  return FirebaseFirestore.instance;
-});
-
-// Провайдер для Image Service
-final imageServiceProvider = Provider<ImageService>((ref) {
-  return ImageService();
-});
-
-// Провайдер для Firebase Storage Service
-final firebaseStorageServiceProvider = Provider<FirebaseStorageService>((ref) {
-  return FirebaseStorageService();
-});
 
 // StreamProvider для списка рисунков текущего пользователя
 final userDrawingsProvider = StreamProvider<List<DrawingModel>>((ref) {
@@ -58,8 +40,3 @@ final userDrawingsProvider = StreamProvider<List<DrawingModel>>((ref) {
     return Stream.value([]);
   }
 });
-
-// // Провайдер для Firebase Storage Service
-// final firebaseStorageServiceProvider = Provider<FirebaseStorageService>((ref) {
-//   return FirebaseStorageService();
-// });

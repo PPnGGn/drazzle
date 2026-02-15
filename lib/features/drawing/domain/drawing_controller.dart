@@ -1,85 +1,37 @@
 import 'dart:typed_data';
-import 'dart:io';
-import 'dart:ui' as ui;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:drazzle/core/services/firebase_storage_service.dart';
+import 'package:drazzle/features/drawing/domain/drawing_export_service.dart';
+import 'package:drazzle/features/drawing/domain/drawing_import_service.dart';
+import 'package:drazzle/features/drawing/domain/drawing_local_save_service.dart';
+import 'package:drazzle/features/drawing/domain/drawing_persistence_service.dart';
+import 'package:drazzle/features/drawing/domain/drawing_operation_state.dart';
+import 'package:drazzle/features/drawing/domain/drawing_point.dart';
+import 'package:drazzle/features/drawing/domain/drawing_state.dart';
+import 'package:drazzle/core/di/drawing_providers.dart';
 import 'package:drazzle/core/services/notification_service.dart';
 import 'package:drazzle/core/di/talker_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-
-// Состояние рисовалка
-sealed class DrawingOperationState {
-  const DrawingOperationState();
-}
-
-class DrawingOperationIdle extends DrawingOperationState {
-  const DrawingOperationIdle();
-}
-
-class DrawingOperationLoading extends DrawingOperationState {
-  const DrawingOperationLoading();
-}
-
-class DrawingOperationSuccess extends DrawingOperationState {
-  final String? operation; // сохранение, экспорт, импорт
-  const DrawingOperationSuccess({this.operation});
-}
-
-class DrawingOperationError extends DrawingOperationState {
-  final String message;
-  const DrawingOperationError(this.message);
-}
-
-// Точка рисования
-class DrawingPoint {
-  final Offset offset;
-  final Paint paint;
-  final bool isEraser;
-
-  DrawingPoint({
-    required this.offset,
-    required this.paint,
-    required this.isEraser,
-  });
-
-  factory DrawingPoint.create({
-    required Offset offset,
-    Color color = Colors.black,
-    double strokeWidth = 3.0,
-    bool isEraser = false,
-  }) {
-    return DrawingPoint(
-      offset: offset,
-      paint: Paint()
-        ..color = isEraser ? Colors.white : color
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..style = PaintingStyle.stroke,
-      isEraser: isEraser,
-    );
-  }
-}
 
 // Контроллер для рисования
 class DrawingController extends Notifier<DrawingState> {
-  final ImagePicker _imagePicker = ImagePicker();
-  final FirebaseStorageService _firebaseStorageService =
-      FirebaseStorageService();
-  final NotificationService _notificationService = NotificationService();
+  late final DrawingImportService _importService;
+  late final DrawingExportService _exportService;
+  late final DrawingLocalSaveService _localSaveService;
+  late final DrawingPersistenceService _persistenceService;
+  late final NotificationService _notificationService;
   late final Talker _talker;
 
   @override
   DrawingState build() {
     _talker = ref.read(talkerProvider);
+    _importService = ref.read(drawingImportServiceProvider);
+    _exportService = ref.read(drawingExportServiceProvider);
+    _localSaveService = ref.read(drawingLocalSaveServiceProvider);
+    _persistenceService = ref.read(drawingPersistenceServiceProvider);
+    _notificationService = ref.read(drawingNotificationServiceProvider);
+    
     _talker.info('Инициализация DrawingController');
     return DrawingState();
   }
@@ -90,7 +42,6 @@ class DrawingController extends Notifier<DrawingState> {
       strokes: [],
       currentStroke: [],
       backgroundImage: backgroundImage,
-      clearBackground: backgroundImage == null,
       operationState: const DrawingOperationIdle(),
     );
   }
@@ -163,39 +114,21 @@ class DrawingController extends Notifier<DrawingState> {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
 
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-      );
-      if (image != null) {
-        final imageData = await image.readAsBytes();
-        state = state.copyWith(
-          backgroundImage: imageData,
-          operationState: const DrawingOperationSuccess(operation: 'import'),
-        );
-      } else {
+      final imageData = await _importService.pickBackgroundImage();
+      if (imageData == null) {
         state = state.copyWith(operationState: const DrawingOperationIdle());
+        return;
       }
+
+      state = state.copyWith(
+        backgroundImage: imageData,
+        operationState: const DrawingOperationSuccess(operation: 'import'),
+      );
     } catch (e) {
       state = state.copyWith(
         operationState: DrawingOperationError('Ошибка импорта: $e'),
       );
     }
-  }
-
-  Future<void> shareDrawing(String imagePath, BuildContext context) async {
-    if (!context.mounted) return;
-
-    final box = context.findRenderObject() as RenderBox?;
-    final rect = box != null
-        ? box.localToGlobal(Offset.zero) & box.size
-        : Rect.zero;
-
-    final params = ShareParams(
-      files: [XFile(imagePath)],
-      sharePositionOrigin: rect,
-    );
-
-    await SharePlus.instance.share(params);
   }
 
   // Экспорт рисунка через нативный share
@@ -206,25 +139,23 @@ class DrawingController extends Notifier<DrawingState> {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
 
-      final boundary =
-          repaintBoundaryKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary == null) {
-        throw Exception('Не удалось получить boundary для экспорта');
-      }
+      final tempFile = await _exportService.exportFromBoundary(
+        repaintBoundaryKey: repaintBoundaryKey,
+        pixelRatio: 2.0,
+      );
 
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final bytes = byteData!.buffer.asUint8List();
-      // создание временного файла
-      final tempFile = await _createTempFile(bytes);
-
-      // Проверяем, что контекст все еще валиден перед использованием
-      if (context.mounted) {
-        await shareDrawing(tempFile.path, context);
+      try {
+        if (context.mounted) {
+          await _exportService.shareImage(
+            imagePath: tempFile.path,
+            context: context,
+          );
+        }
+      } finally {
+        if (await tempFile.exists()) {
+          await tempFile.delete();
+        }
       }
-      // удаление временного файла
-      await tempFile.delete();
 
       state = state.copyWith(operationState: const DrawingOperationSuccess());
     } catch (e) {
@@ -243,51 +174,17 @@ class DrawingController extends Notifier<DrawingState> {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
 
-      // 1. Получаем изображение с холста
       final RenderRepaintBoundary boundary =
           repaintBoundaryKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
-      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData = await image.toByteData(
-        format: ui.ImageByteFormat.png,
+
+      await _persistenceService.saveDrawing(
+        boundary: boundary,
+        talker: _talker,
+        title: title,
+        drawingId: drawingId,
+        createdAt: createdAt,
       );
-      final Uint8List imageBytes = byteData!.buffer.asUint8List();
-
-      // 2. Получаем текущего пользователя
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception('Пользователь не авторизован');
-      }
-
-      // 3. Определяем имя автора (сначала из FirebaseAuth, затем из Firestore users/{uid})
-      final authorName = await _resolveAuthorName(user);
-
-      // 4. Сохраняем через общий сервис (Firestore: base64 + thumbnail)
-      final tempFile = await _createTempFile(imageBytes);
-
-      final resolvedTitle =
-          title ?? 'Рисунок ${DateTime.now().day}.${DateTime.now().month}';
-
-      if (drawingId != null && drawingId.trim().isNotEmpty) {
-        await _firebaseStorageService.updateDrawing(
-          drawingId: drawingId,
-          imageFile: tempFile,
-          authorId: user.uid,
-          title: resolvedTitle,
-          authorName: authorName,
-          createdAt: createdAt ?? DateTime.now(),
-          talker: _talker,
-        );
-      } else {
-        await _firebaseStorageService.saveDrawing(
-          imageFile: tempFile,
-          authorId: user.uid,
-          title: resolvedTitle,
-          authorName: authorName,
-          talker: _talker,
-        );
-      }
-      await tempFile.delete();
 
       state = state.copyWith(
         operationState: const DrawingOperationSuccess(operation: 'save'),
@@ -310,104 +207,34 @@ class DrawingController extends Notifier<DrawingState> {
 
   // Сохранение в галерею устройства
   Future<void> saveLocalImage(GlobalKey globalKey) async {
-    RenderRepaintBoundary boundary =
-        globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    ui.Image image = await boundary.toImage();
-    ByteData? byteData = await (image.toByteData(
-      format: ui.ImageByteFormat.png,
-    ));
-    if (byteData != null) {
-      final result = await ImageGallerySaverPlus.saveImage(
-        byteData.buffer.asUint8List(),
+    try {
+      state = state.copyWith(operationState: const DrawingOperationLoading());
+
+      final boundary =
+          globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+
+      final result = await _localSaveService.saveBoundaryToGallery(
+        boundary: boundary,
+      );
+      
+      state = state.copyWith(
+        operationState: const DrawingOperationSuccess(operation: 'saveLocal'),
       );
       _talker.info('Изображение сохранено в галерею устройства: $result');
+    } catch (e) {
+      state = state.copyWith(
+        operationState: DrawingOperationError('Ошибка сохранения в галерею: $e'),
+      );
     }
   }
 
-  Future<String> _resolveAuthorName(User user) async {
-    final displayName = user.displayName?.trim();
-    if (displayName != null && displayName.isNotEmpty) {
-      return displayName;
-    }
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      final data = doc.data();
-      final nameFromDb = (data?['displayName'] as String?)?.trim();
-      if (nameFromDb != null && nameFromDb.isNotEmpty) {
-        return nameFromDb;
-      }
-    } catch (_) {
-      // Игнорируем и возвращаем дефолт ниже
-    }
-
-    return 'Без имени';
-  }
-
-  /// Создает временный файл для сохранения
-  Future<File> _createTempFile(Uint8List bytes) async {
-    final tempDir = await getTemporaryDirectory();
-    final file = File(
-      '${tempDir.path}/drawing_${DateTime.now().millisecondsSinceEpoch}.png',
-    );
-    await file.writeAsBytes(bytes);
-    return file;
-  }
-
-  /// Сброс состояния операции
+  // Сброс состояния операции
   void resetOperationState() {
     state = state.copyWith(operationState: const DrawingOperationIdle());
   }
 }
 
-/// Состояние рисования
-class DrawingState {
-  final List<List<DrawingPoint>> strokes;
-  final List<DrawingPoint> currentStroke;
-  final Color selectedColor;
-  final double selectedWidth;
-  final bool isEraserMode;
-  final Uint8List? backgroundImage;
-  final DrawingOperationState operationState;
-
-  const DrawingState({
-    this.strokes = const [],
-    this.currentStroke = const [],
-    this.selectedColor = Colors.black,
-    this.selectedWidth = 5.0,
-    this.isEraserMode = false,
-    this.backgroundImage,
-    this.operationState = const DrawingOperationIdle(),
-  });
-
-  DrawingState copyWith({
-    List<List<DrawingPoint>>? strokes,
-    List<DrawingPoint>? currentStroke,
-    Color? selectedColor,
-    double? selectedWidth,
-    bool? isEraserMode,
-    Uint8List? backgroundImage,
-    DrawingOperationState? operationState,
-    bool clearBackground = false,
-  }) {
-    return DrawingState(
-      strokes: strokes ?? this.strokes,
-      currentStroke: currentStroke ?? this.currentStroke,
-      selectedColor: selectedColor ?? this.selectedColor,
-      selectedWidth: selectedWidth ?? this.selectedWidth,
-      isEraserMode: isEraserMode ?? this.isEraserMode,
-      backgroundImage: clearBackground
-          ? null
-          : (backgroundImage ?? this.backgroundImage),
-      operationState: operationState ?? this.operationState,
-    );
-  }
-}
-
-/// Provider для DrawingController
+// Provider для DrawingController
 final drawingControllerProvider =
     NotifierProvider<DrawingController, DrawingState>(
       () => DrawingController(),

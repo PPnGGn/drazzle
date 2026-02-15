@@ -1,4 +1,5 @@
 import 'package:drazzle/features/auth/domain/auth_controller.dart';
+import 'package:drazzle/features/auth/domain/auth_operation_state.dart';
 import 'package:drazzle/features/auth/ui/widgets/custom_text_field.dart';
 import 'package:drazzle/features/auth/ui/widgets/error_snack_bar.dart';
 import 'package:email_validator/email_validator.dart';

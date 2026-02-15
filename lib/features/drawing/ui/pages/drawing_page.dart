@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:drazzle/features/drawing/domain/drawing_controller.dart';
+import 'package:drazzle/features/drawing/domain/drawing_operation_state.dart';
 import 'package:drazzle/features/drawing/ui/widgets/brush_size_dialog.dart';
 import 'package:drazzle/features/drawing/ui/widgets/color_picker.dart';
 import 'package:drazzle/features/drawing/ui/widgets/editor_button.dart';
@@ -42,7 +43,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
     });
   }
 
-  void _onSavePressed() {
+  void _onSavePressed() async {
     final isLoading = ref.read(
       drawingControllerProvider.select(
         (s) => s.operationState is DrawingOperationLoading,
@@ -51,7 +52,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
 
     if (isLoading) return; // Предотвращаем множественные нажатия
 
-    ref
+    await ref
         .read(drawingControllerProvider.notifier)
         .saveDrawing(
           _repaintBoundaryKey,
@@ -59,7 +60,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
           drawingId: widget.drawingId,
           createdAt: widget.createdAt,
         );
-    ref
+    await ref
         .read(drawingControllerProvider.notifier)
         .saveLocalImage(_repaintBoundaryKey);
   }

@@ -13,15 +13,18 @@ class ColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Dialog(
       insetPadding: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: BoxConstraints(
-          minHeight: 356,
-          maxHeight: 520,
-          minWidth: 324,
-          maxWidth: 460,
+          minHeight: 0,
+          maxHeight: (screenHeight * 0.9).clamp(0.0, 520.0),
+          minWidth: 0,
+          maxWidth: (screenWidth * 0.9).clamp(0.0, 460.0),
         ),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -41,34 +44,32 @@ class ColorPicker extends StatelessWidget {
     // Адаптивный размер ячейки
     final cellSize = _calculateCellSize(screenWidth, screenHeight);
 
-    return Flexible(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Верхняя строка: градиент от белого к черному
-            _buildColorRow(
-              colors.take(9).toList(),
-              cellSize,
-              selectedColor,
-              context,
-            ),
-            // Основная сетка: 9 цветов × 9 строк градиента
-            ...List.generate(9, (rowIndex) {
-              final startIndex = 9 + (rowIndex * 9);
-              final rowColors = colors.skip(startIndex).take(9).toList();
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Верхняя строка: градиент от белого к черному
+          _buildColorRow(
+            colors.take(9).toList(),
+            cellSize,
+            selectedColor,
+            context,
+          ),
+          // Основная сетка: 9 цветов × 9 строк градиента
+          ...List.generate(9, (rowIndex) {
+            final startIndex = 9 + (rowIndex * 9);
+            final rowColors = colors.skip(startIndex).take(9).toList();
 
-              return Padding(
-                padding: EdgeInsets.zero,
-                child: _buildColorRow(
-                  rowColors,
-                  cellSize,
-                  selectedColor,
-                  context,
-                ),
-              );
-            }),
-          ],
-        ),
+            return Padding(
+              padding: EdgeInsets.zero,
+              child: _buildColorRow(
+                rowColors,
+                cellSize,
+                selectedColor,
+                context,
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

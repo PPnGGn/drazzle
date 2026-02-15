@@ -1,30 +1,10 @@
+import 'package:drazzle/features/auth/domain/auth_operation_state.dart';
 import 'package:drazzle/features/auth/domain/usecases/auth_usecase.dart';
-import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
+import 'package:drazzle/core/di/auth_providers.dart';
 import 'package:drazzle/core/di/talker_provider.dart';
 import 'package:drazzle/core/errors/auth_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talker_flutter/talker_flutter.dart';
-
-sealed class AuthOperationState {
-  const AuthOperationState();
-}
-
-class AuthOperationInitial extends AuthOperationState {
-  const AuthOperationInitial();
-}
-
-class AuthOperationLoading extends AuthOperationState {
-  const AuthOperationLoading();
-}
-
-class AuthOperationSuccess extends AuthOperationState {
-  const AuthOperationSuccess();
-}
-
-class AuthOperationError extends AuthOperationState {
-  final String message;
-  const AuthOperationError(this.message);
-}
 
 class AuthController extends Notifier<AuthOperationState> {
   late final AuthUseCase _authUseCase = ref.read(authUseCaseProvider);
@@ -49,7 +29,9 @@ class AuthController extends Notifier<AuthOperationState> {
       state = AuthOperationError(e.userMessage);
     } catch (e, stackTrace) {
       _talker.handle(e, stackTrace, 'Непредвиденная ошибка при входе');
-      state = const AuthOperationError('Произошла непредвиденная ошибка при входе');
+      state = const AuthOperationError(
+        'Произошла непредвиденная ошибка при входе',
+      );
     }
   }
 
@@ -73,7 +55,9 @@ class AuthController extends Notifier<AuthOperationState> {
       state = AuthOperationError(e.userMessage);
     } catch (e, stackTrace) {
       _talker.handle(e, stackTrace, 'Непредвиденная ошибка при регистрации');
-      state = const AuthOperationError('Произошла непредвиденная ошибка при регистрации');
+      state = const AuthOperationError(
+        'Произошла непредвиденная ошибка при регистрации',
+      );
     }
   }
 
@@ -89,7 +73,9 @@ class AuthController extends Notifier<AuthOperationState> {
       state = AuthOperationError(e.userMessage);
     } catch (e, stackTrace) {
       _talker.handle(e, stackTrace, 'Непредвиденная ошибка при выходе');
-      state = const AuthOperationError('Произошла непредвиденная ошибка при выходе');
+      state = const AuthOperationError(
+        'Произошла непредвиденная ошибка при выходе',
+      );
     }
   }
 }

@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'package:drazzle/core/di/firebase_providers.dart';
 import 'package:drazzle/core/theme/app_colors.dart';
-import 'package:drazzle/features/auth/ui/providers/auth_providers.dart';
+import 'package:drazzle/core/di/auth_providers.dart';
+import 'package:drazzle/core/di/gallery_providers.dart';
 import 'package:drazzle/features/drawing/models/drawing_model.dart';
-import 'package:drazzle/features/gallery/ui/providers/gallery_providers.dart';
 import 'package:drazzle/features/gallery/ui/widgets/gallery_shimmer_widget.dart';
 import 'package:drazzle/features/widgets/glass_app_bar.dart';
 import 'package:drazzle/features/widgets/gradient_button.dart';

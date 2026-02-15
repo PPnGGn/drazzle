@@ -1,4 +1,4 @@
-import 'package:drazzle/features/drawing/domain/drawing_controller.dart';
+import 'package:drazzle/features/drawing/domain/drawing_point.dart';
 import 'package:flutter/material.dart';
 
 class Painter extends CustomPainter {

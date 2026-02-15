@@ -34,14 +34,22 @@ class FullscreenImagePage extends StatelessWidget {
               final bytes = _tryDecodeToBytes(imageUrl);
               if (bytes == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Не удалось подготовить изображение для редактирования')),
+                  const SnackBar(
+                    content: Text(
+                      'Не удалось подготовить изображение для редактирования',
+                    ),
+                  ),
                 );
                 return;
               }
 
               if (drawingId == null || drawingId!.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Не удалось определить, что именно нужно редактировать')),
+                  const SnackBar(
+                    content: Text(
+                      'Не удалось определить, что именно нужно редактировать',
+                    ),
+                  ),
                 );
                 return;
               }
@@ -65,12 +73,19 @@ class FullscreenImagePage extends StatelessWidget {
       body: Center(
         child: Hero(
           tag: heroTag,
-          flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
-            // Для "открытия" берём виджет из grid (квадрат + ClipRRect).
-            // Для "закрытия" тоже берём grid-виджет, чтобы не было эффекта
-            // "прямоугольник долетел и в конце стал квадратным".
-            return fromHeroContext.widget;
-          },
+          flightShuttleBuilder:
+              (
+                flightContext,
+                animation,
+                flightDirection,
+                fromHeroContext,
+                toHeroContext,
+              ) {
+                // Для "открытия" берём виджет из grid (квадрат + ClipRRect).
+                // Для "закрытия" тоже берём grid-виджет, чтобы не было эффекта
+                // "прямоугольник долетел и в конце стал квадратным".
+                return fromHeroContext.widget;
+              },
           child: Material(
             type: MaterialType.transparency,
             child: ColoredBox(
