@@ -49,7 +49,6 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState is AuthOperationLoading;
 
-
     ref.listen<AuthOperationState>(authControllerProvider, (previous, next) {
       if (next is AuthOperationError) {
         showErrorSnackBar(context, next.message);
@@ -59,7 +58,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     });
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           Image.asset(
@@ -74,7 +73,9 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 200),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height < 767 ? 80 : 200,
+                ),
                 Text(
                   'Регистрация',
                   style: Theme.of(context).textTheme.bodyLarge,
@@ -123,7 +124,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
           Positioned(
             left: 16,
             right: 16,
-            bottom: 56,
+            bottom: 26,
             child: FilledButton(
               onPressed: isLoading ? null : _handleRegistration,
               child: isLoading

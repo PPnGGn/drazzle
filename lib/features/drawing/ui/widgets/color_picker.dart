@@ -1,3 +1,4 @@
+import 'package:drazzle/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class ColorPicker extends StatelessWidget {
@@ -13,135 +14,130 @@ class ColorPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      insetPadding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        constraints: BoxConstraints(
+          minHeight: 356,
+          maxHeight: 520,
+          minWidth: 324,
+          maxWidth: 460,
+        ),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.grayc4,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: _buildColorGrid(context),
+      ),
+    );
+  }
+
+  Widget _buildColorGrid(BuildContext context) {
+    final colors = _generateColorPalette();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Адаптивный размер ячейки
+    final cellSize = _calculateCellSize(screenWidth, screenHeight);
+
+    return Flexible(
+      child: SingleChildScrollView(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Color Picker',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+            // Верхняя строка: градиент от белого к черному
+            _buildColorRow(
+              colors.take(9).toList(),
+              cellSize,
+              selectedColor,
+              context,
             ),
-            const SizedBox(height: 20),
-            _buildColorGrid(context),
+            // Основная сетка: 9 цветов × 9 строк градиента
+            ...List.generate(9, (rowIndex) {
+              final startIndex = 9 + (rowIndex * 9);
+              final rowColors = colors.skip(startIndex).take(9).toList();
+
+              return Padding(
+                padding: EdgeInsets.zero,
+                child: _buildColorRow(
+                  rowColors,
+                  cellSize,
+                  selectedColor,
+                  context,
+                ),
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildColorGrid(BuildContext context) {
-    // Генерируем палитру цветов как на изображении
-    final colors = _generateColorPalette();
-    
-    return Column(
-      children: [
-        // Верхняя строка: градиент от белого к черному (9 цветов)
-        SizedBox(
-          height: 28,
-          child: Row(
-            children: colors.take(9).map((color) {
-              final isSelected = color.value == selectedColor.value;
-              return GestureDetector(
-                onTap: () {
-                  onPick(color);
-                  Navigator.of(context).pop();
-                },
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  margin: const EdgeInsets.only(right: 3),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(4),
-                    border: isSelected
-                        ? Border.all(color: Colors.white, width: 2)
-                        : null,
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        const SizedBox(height: 3),
-        // Основная сетка: 9 цветов × 9 строк градиента
-        ...List.generate(9, (rowIndex) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 3),
-            child: SizedBox(
-              height: 28,
-              child: Row(
-                children: List.generate(9, (colIndex) {
-                  final colorIndex = 9 + (rowIndex * 9) + colIndex;
-                  final color = colors[colorIndex];
-                  final isSelected = color.value == selectedColor.value;
-                  
-                  return GestureDetector(
-                    onTap: () {
-                      onPick(color);
-                      Navigator.of(context).pop();
-                    },
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      margin: const EdgeInsets.only(right: 3),
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(4),
-                        border: isSelected
-                            ? Border.all(color: Colors.white, width: 2)
-                            : null,
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                    ),
-                  );
-                }),
+  double _calculateCellSize(double screenWidth, double screenHeight) {
+    final maxDialogWidth =
+        screenWidth * 0.9 - 32; // 16 padding с каждой стороны
+    final cellSize = (maxDialogWidth / 9).floorToDouble();
+
+    return cellSize.clamp(24.0, 48.0);
+  }
+
+  Widget _buildColorRow(
+    List<Color> colors,
+    double cellSize,
+    Color selectedColor,
+    BuildContext context,
+  ) {
+    return SizedBox(
+      height: cellSize,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: colors.map((color) {
+          final isSelected = color.value == selectedColor.value;
+          return GestureDetector(
+            onTap: () {
+              onPick(color);
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              width: cellSize,
+              height: cellSize,
+              decoration: BoxDecoration(
+                color: color,
+                border: isSelected
+                    ? Border.all(color: Colors.white, width: 2)
+                    : null,
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ]
+                    : null,
               ),
             ),
           );
-        }),
-      ],
+        }).toList(),
+      ),
     );
   }
 
   List<Color> _generateColorPalette() {
     final colors = <Color>[];
-    
-    // Верхняя полоса: градиент от белого к черному (9 цветов)
+
+    //градиент от белого к черному (сверху)
     final graySteps = 9;
     for (int i = 0; i < graySteps; i++) {
       final value = (1.0 - (i / (graySteps - 1)) * 255).round();
       colors.add(Color.fromARGB(255, value, value, value));
     }
-    
-    // Основные цвета для градиентов (9 цветов)
+
+    // Основные цвета для градиентов
     final baseColors = [
       // Темно голубой/бирюзовый
       const Color(0xFF008B8B),
-      // Синий  
+      // Синий
       const Color(0xFF0000FF),
       // Фиолетовый
       const Color(0xFF800080),
@@ -158,19 +154,21 @@ class ColorPicker extends StatelessWidget {
       // Зеленый
       const Color(0xFF00FF00),
     ];
-    
-    // Создаем градиенты вниз для каждого цвета (9 строк)
+
+    // градиенты вниз для каждого цвета
     final rows = 9;
     for (int row = 0; row < rows; row++) {
-      final brightness = 0.2 + (row / rows) * 0.8; // от 0.2 до 1.0 (темный сверху, светлый снизу)
-      
+      final brightness =
+          0.2 +
+          (row / rows) * 0.8; // от 0.2 до 1.0 (темный сверху, светлый снизу)
+
       for (final baseColor in baseColors) {
         final hsl = HSLColor.fromColor(baseColor);
         final adjustedColor = hsl.withLightness(brightness).toColor();
         colors.add(adjustedColor);
       }
     }
-    
+
     return colors;
   }
 }
