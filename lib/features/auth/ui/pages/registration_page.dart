@@ -59,7 +59,7 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
     });
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Image.asset(
@@ -116,23 +116,26 @@ class _RegistrationPageState extends ConsumerState<RegistrationPage> {
                   isPassword: true,
                   onSubmitted: _handleRegistration,
                 ),
-                const SizedBox(height: 100),
-
-                FilledButton(
-                  onPressed: isLoading ? null : _handleRegistration,
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Регистрация'),
-                ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 120),
               ],
+            ),
+          ),
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 56,
+            child: FilledButton(
+              onPressed: isLoading ? null : _handleRegistration,
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Регистрация'),
             ),
           ),
         ],

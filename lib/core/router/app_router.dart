@@ -17,6 +17,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     observers: [TalkerRouteObserver(talker)],
     initialLocation: '/splash',
+
     redirect: (context, state) {
       final authAsync = ref.watch(authUserProvider);
       return authAsync.when(
@@ -25,13 +26,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           final isOnAuthPage =
               state.matchedLocation == '/login' ||
               state.matchedLocation == '/registration';
+          final isOnSplashPage = state.matchedLocation == '/splash';
+
+          if (isOnSplashPage) {
+            return isLoggedIn ? '/gallery' : '/login';
+          }
 
           if (isLoggedIn && isOnAuthPage) {
             return '/gallery';
           }
+
           if (!isLoggedIn && !isOnAuthPage) {
             return '/login';
           }
+
           return null;
         },
         loading: () {

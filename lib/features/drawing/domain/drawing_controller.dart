@@ -181,14 +181,24 @@ class DrawingController extends Notifier<DrawingState> {
     }
   }
 
-  Future<void> shareDrawing(String imagePath) async {
-    final params = ShareParams(files: [XFile(imagePath)]);
+  Future<void> shareDrawing(String imagePath, BuildContext context) async {
+    if (!context.mounted) return;
+    
+    final box = context.findRenderObject() as RenderBox?;
+    final rect = box != null 
+        ? box.localToGlobal(Offset.zero) & box.size
+        : Rect.zero;
+    
+    final params = ShareParams(
+      files: [XFile(imagePath)],
+      sharePositionOrigin: rect,
+    );
 
     await SharePlus.instance.share(params);
   }
 
   // Экспорт рисунка через нативный share
-  Future<void> exportDrawing(GlobalKey repaintBoundaryKey) async {
+  Future<void> exportDrawing(GlobalKey repaintBoundaryKey, BuildContext context) async {
     try {
       state = state.copyWith(operationState: const DrawingOperationLoading());
 
@@ -205,7 +215,10 @@ class DrawingController extends Notifier<DrawingState> {
       // создание временного файла
       final tempFile = await _createTempFile(bytes);
 
-      await shareDrawing(tempFile.path);
+      // Проверяем, что контекст все еще валиден перед использованием
+      if (context.mounted) {
+        await shareDrawing(tempFile.path, context);
+      }
       // удаление временного файла
       await tempFile.delete();
 

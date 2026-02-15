@@ -96,7 +96,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
   Future<void> _onExportPressed() async {
     await ref
         .read(drawingControllerProvider.notifier)
-        .exportDrawing(_repaintBoundaryKey);
+        .exportDrawing(_repaintBoundaryKey, context);
   }
 
   @override
@@ -120,7 +120,7 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
         if (successState.operation == 'save') {
           Future.microtask(() {
             if (context.mounted) {
-              context.pop();
+              context.go('/gallery');
             }
           });
         }
