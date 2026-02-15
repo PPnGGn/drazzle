@@ -165,6 +165,53 @@ class DrawingController extends Notifier<DrawingState> {
     }
   }
 
+  // Комплексное сохранение (и в базу, и локально)
+  Future<void> saveDrawingComplete(
+    GlobalKey repaintBoundaryKey, {
+    String? title,
+    String? drawingId,
+    DateTime? createdAt,
+  }) async {
+    try {
+      state = state.copyWith(operationState: const DrawingOperationLoading());
+
+      final RenderRepaintBoundary boundary =
+          repaintBoundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+
+      // Сначала сохраняем в базу данных
+      await _persistenceService.saveDrawing(
+        boundary: boundary,
+        talker: _talker,
+        title: title,
+        drawingId: drawingId,
+        createdAt: createdAt,
+      );
+
+      // Затем сохраняем локально
+      await _localSaveService.saveBoundaryToGallery(
+        boundary: boundary,
+      );
+
+      state = state.copyWith(
+        operationState: const DrawingOperationSuccess(operation: 'save'),
+      );
+
+      // Показываем уведомление об успешном сохранении
+      await _notificationService.showSuccessNotification(talker: _talker);
+    } catch (e) {
+      state = state.copyWith(
+        operationState: DrawingOperationError('Ошибка сохранения: $e'),
+      );
+
+      // Показываем уведомление об ошибке
+      await _notificationService.showErrorNotification(
+        'Ошибка сохранения: $e',
+        talker: _talker,
+      );
+    }
+  }
+
   Future<void> saveDrawing(
     GlobalKey repaintBoundaryKey, {
     String? title,

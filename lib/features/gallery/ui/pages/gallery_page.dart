@@ -7,6 +7,7 @@ import 'package:drazzle/features/drawing/models/drawing_model.dart';
 import 'package:drazzle/features/gallery/ui/widgets/gallery_shimmer_widget.dart';
 import 'package:drazzle/features/widgets/glass_app_bar.dart';
 import 'package:drazzle/features/widgets/gradient_button.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -111,7 +112,7 @@ class GalleryPage extends ConsumerWidget {
   void _logoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: const Text('Выйти из аккаунта?'),
         actions: [
           TextButton(
@@ -243,7 +244,7 @@ class GalleryPage extends ConsumerWidget {
   }) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: const Text('Удалить рисунок?'),
         content: const Text('Действие нельзя отменить.'),
         actions: [

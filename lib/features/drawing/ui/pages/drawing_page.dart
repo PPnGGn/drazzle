@@ -6,6 +6,7 @@ import 'package:drazzle/features/drawing/ui/widgets/color_picker.dart';
 import 'package:drazzle/features/drawing/ui/widgets/editor_button.dart';
 import 'package:drazzle/features/drawing/ui/widgets/painter.dart';
 import 'package:drazzle/features/widgets/glass_app_bar.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,15 +55,12 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
 
     await ref
         .read(drawingControllerProvider.notifier)
-        .saveDrawing(
+        .saveDrawingComplete(
           _repaintBoundaryKey,
           title: widget.initialTitle,
           drawingId: widget.drawingId,
           createdAt: widget.createdAt,
         );
-    await ref
-        .read(drawingControllerProvider.notifier)
-        .saveLocalImage(_repaintBoundaryKey);
   }
 
   Future<void> _onBrushPressed() async {
@@ -105,6 +103,8 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
   // импорт изображения
   Future<void> _onImportImage() async {
     await ref.read(drawingControllerProvider.notifier).importImage();
+
+    if (!mounted) return; // Проверяем, что виджет все еще монтирован
   }
 
   // экспорт изображения
@@ -112,6 +112,8 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
     await ref
         .read(drawingControllerProvider.notifier)
         .exportDrawing(_repaintBoundaryKey, context);
+
+    if (!mounted) return; // Проверяем, что виджет все еще монтирован
   }
 
   @override
@@ -120,7 +122,9 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
       if (next.operationState is DrawingOperationError) {
         // сбросить состояние ошибки
         Future.microtask(() {
-          ref.read(drawingControllerProvider.notifier).resetOperationState();
+          if (mounted) {
+            ref.read(drawingControllerProvider.notifier).resetOperationState();
+          }
         });
       }
       // проверка успешного сохранения
@@ -129,7 +133,9 @@ class _EditorPageState extends ConsumerState<DrawningPage> {
         final successState = next.operationState as DrawingOperationSuccess;
 
         Future.microtask(() {
-          ref.read(drawingControllerProvider.notifier).resetOperationState();
+          if (mounted) {
+            ref.read(drawingControllerProvider.notifier).resetOperationState();
+          }
         });
 
         if (successState.operation == 'save') {
