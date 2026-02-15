@@ -30,6 +30,7 @@ class DrawingState {
     bool? isEraserMode,
     Uint8List? backgroundImage,
     DrawingOperationState? operationState,
+    bool clearBackground = false,
   }) {
     return DrawingState(
       strokes: strokes ?? this.strokes,
@@ -37,7 +38,9 @@ class DrawingState {
       selectedColor: selectedColor ?? this.selectedColor,
       selectedWidth: selectedWidth ?? this.selectedWidth,
       isEraserMode: isEraserMode ?? this.isEraserMode,
-      backgroundImage: backgroundImage ?? this.backgroundImage,
+      backgroundImage: clearBackground
+          ? null
+          : (backgroundImage ?? this.backgroundImage),
       operationState: operationState ?? this.operationState,
     );
   }

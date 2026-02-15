@@ -42,6 +42,7 @@ class DrawingController extends Notifier<DrawingState> {
       strokes: [],
       currentStroke: [],
       backgroundImage: backgroundImage,
+      clearBackground: backgroundImage == null,
       operationState: const DrawingOperationIdle(),
     );
   }
